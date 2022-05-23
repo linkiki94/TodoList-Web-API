@@ -1,0 +1,13 @@
+<% if (typeof errorMessage === 'undefined') { var errorMessage = []; } %>
+<% if(errorMessage.length != 0){ %>
+  <div>
+    <font color='#ff4500'><strong>Warning!</strong> The form contains <%= errorMessage.length %> errors.</font>
+  </div>
+  <div>
+    <ul>
+      <% for(let item of errorMessage){ %>
+        <font color='#ff4500'><li><%= item %></li></font>
+      <% } %>
+    </ul>
+  </div>
+<% } %>

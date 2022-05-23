@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+   <link rel="stylesheet" href="public/stylesheets/style.css" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+        <script
+              src="https://code.jquery.com/jquery-3.6.0.min.js"
+              integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+              crossorigin="anonymous"
+            ></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+          <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+
+</head>
+<body>
+<%- include('./header'); %>
+<%- include('./error_messages'); %>
+<% if(isAuth) { %>
+
+    <form action="/" method="post" class="text-left">
+        <div class="add float">
+            <input  type="text" placeholder="キーワード" id="selectText" class="select" name="select"/>
+            <button class="btn btn-primary" type="submit" id="btnSelect"/>検索</button>
+        </div>
+        <div class="text-right add float">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModalAdd">追加</button>
+        </div>
+    </form>
+
+
+<div class="table-responsive">
+  <table class="table table-striped table-condensed">
+	<thead>
+		<tr>
+			<th>タイトル</th>
+			<th>内容</th>
+		</tr>
+	</thead>
+    <tbody>
+        <% var i=0; %>
+        <% for(let todo of todos){ %>
+            <% i++; %>
+        <tr>
+            <td><a href="/" data-toggle="modal" data-target="#myModal" data-id="<%=todo.id%>" data-title="<%=todo.title%>" data-content="<%=todo.content%>"><%=todo.title%></a></td>
+            <td><%=todo.content%></td>
+        </tr>
+        <% } %>
+    </tbody>
+    </table>
+    </div>
+
+
+<% } else { %>
+    <div class="container">
+  <h1 class="signup">TodoListAppへようこそ</h1>
+</div>
+  <div class="container">
+  <a class="btn btn-primary signup" href="/signup" role="button">今すぐ登録！</a>
+</div>
+<% } %>
+
+
+<div class="modal fade" id="myModalAdd" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalLabelId">詳細</h3>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="title-text" class="col-form-label" id="addTitle">タイトル</label>
+                        <input required type="text" class="form-control" id="add-name" name="title" maxlength="40">
+                        <a id="addError"></a>
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="col-form-label">内容</label>
+                        <textarea class="form-control" id="add-text" name="content" rows="13" maxlength="300"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" id="btnAdd">追加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalLabelId">詳細</h3>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="title-text" class="col-form-label">タイトル:</label>
+                        <input type="text" class="form-control" id="recipient-name" name="title" maxlength="40">
+                        <a id="updateError"></a>
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="col-form-label">内容:</label>
+                        <textarea class="form-control" id="message-text" name="content" rows="13" maxlength="300"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">戻る</button>
+                <button type="submit" class="btn btn-primary" id="btnDelete" >削除</button>
+                <button type="button" class="btn btn-primary" id="btnUpdate">更新</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var getID;
+    var getTitle;
+    var getContent;
+
+    $(document).ready(function () {
+
+        //タイトル欄のチェック
+        $('#add-name').change(function() {
+            getTitle = document.getElementById("add-name").value;
+            var count = getTitle.length;
+            var addError= document.getElementById("addError");
+            if(count<1){
+                addError.innerHTML = "<font color='#ff4500'>このフィールドに入力してください。</font>";
+            }
+            else{
+                addError.innerHTML = "";
+            }
+        });
+
+        //追加ボタン
+        $('#btnAdd').click(function () {
+            getTitle = document.getElementById("add-name").value;
+            getContent = document.getElementById("add-text").value;
+            var count = getTitle.length;
+            if(count>0){
+                $.ajax({
+                    type: "POST",
+                    url: "/add",
+                    data: {
+                        title:getTitle,
+                        content:getContent
+                    }
+                }).done(function() {
+                    $('#myModalAdd').modal('hide');
+                    window.location.href = '/';
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    console.log(jqXHR);
+                    console.log(textStatus);
+                    console.log(errorThrown);
+                });
+            }else{
+                var addError= document.getElementById("addError");
+                addError.innerHTML = "<font color='#ff4500'>このフィールドに入力してください。</font>";
+            }
+        });
+
+        //削除ボタン
+        $('#btnDelete').click(function () {
+            $.ajax({
+                type: "POST",
+                url: "/delete",
+                data: {
+                    id:getID
+                }
+            }).done(function () {
+                window.location.href = '/';
+                $('#myModal').modal('hide');
+                $.get("/");
+            }).fail(function(jqXHR, textStatus, errorThrown){
+                console.log(jqXHR);
+                console.log(textStatus);
+                console.log(errorThrown);
+            });
+        });
+
+        //更新ボタン
+        $('#btnUpdate').click(function () {
+            getTitle = document.getElementById("recipient-name").value;
+            getContent = document.getElementById("message-text").value;
+            var count = getTitle.length;
+
+            if(count>0){
+                $.ajax({
+                    type: "POST",
+                    url: "/update",
+                    data: {
+                        id:getID,
+                        title:getTitle,
+                        content:getContent
+                    }
+                }).done(function () {
+                    $('#myModal').modal('hide');
+                    window.location.href = '/';
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    console.log(jqXHR);
+                    console.log(textStatus);
+                    console.log(errorThrown);
+                });
+            }else{
+                var updateError= document.getElementById("updateError");
+                updateError.innerHTML = "<font color='#ff4500'>このフィールドに入力してください。</font>";
+            }
+        });
+
+        //更新する際に、タイトル欄のチェック
+        $('#recipient-name').change(function() {
+            getTitle = document.getElementById("recipient-name").value;
+            var count = getTitle.length;
+            var updateError= document.getElementById("updateError");
+
+            if(count<1){
+                updateError.innerHTML = "<font color='#ff4500'>このフィールドに入力してください。</font>";
+            }
+            else{
+                updateError.innerHTML = "";
+            }
+        });
+    });
+
+    //ダイアログに値を与える
+    $(function () { $('#myModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            getID = button.data('id');
+            getTitle = button.data('title');
+            getContent = button.data('content');
+            var modal = $(this);
+            var element = document.getElementById(getID);
+
+            modal.find('#recipient-name').val(getTitle);
+            modal.find('#message-text').val(getContent);
+        })
+    });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+        integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+        integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
+</body>
+</html>
